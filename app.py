@@ -11,6 +11,11 @@ from dotenv import load_dotenv  # <-- NOVA LINHA
 load_dotenv() # <-- NOVA LINHA (Carrega as senhas do .env)
 
 app = Flask(__name__)
+from datetime import timedelta
+
+# Define que a sessão expira se fechar o navegador ou após inatividade
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 app.secret_key = os.getenv('SECRET_KEY', 'xando_projeto_imobiliaria') # Busca do .env
 
 # --- CONFIGURAÇÃO DE UPLOAD ---
@@ -85,6 +90,9 @@ def login():
             user = cur.fetchone()
             
             if user:
+                # --- ÚNICA ADIÇÃO: ATIVA O TEMPO DE SESSÃO ---
+                session.permanent = True
+                
                 session['usuario_id'] = user['id']
                 session['nome_usuario'] = user['nome']
                 session['user_nivel'] = user['nivel_acesso']
