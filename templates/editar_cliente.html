@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Cliente | Xandi</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 20px; }
+        .container-edicao { background: white; max-width: 600px; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #1a237e; margin-bottom: 20px; padding-bottom: 10px; }
+        .header h1 { color: #1a237e; margin: 0; font-size: 1.5rem; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #475569; font-weight: bold; font-size: 0.9rem; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #1a237e; box-shadow: 0 0 5px rgba(26, 35, 126, 0.2); }
+        input[readonly] { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+        .btn-salvar { background: #1a237e; color: white; border: none; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 10px; }
+        .btn-salvar:hover { background: #283593; }
+        .btn-cancelar { display: block; text-align: center; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container-edicao">
+    <div class="header">
+        <h1>✏️ Editar Cadastro</h1>
+        <p style="font-size: 0.85rem; color: #64748b;">Alterando dados de: <strong>{{ cliente.nome_razao }}</strong></p>
+    </div>
+
+    <form action="{{ url_for('atualizar_cliente', id=cliente.id) }}" method="POST">
+        <div class="form-group">
+            <label>Documento (CPF/CNPJ)</label>
+            <input type="text" value="{{ cliente.documento }}" readonly title="O documento não pode ser alterado por segurança.">
+        </div>
+
+        <div class="form-group">
+            <label>Nome / Razão Social</label>
+            <input type="text" name="nome_razao" value="{{ cliente.nome_razao }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" name="email" value="{{ cliente.email }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" name="telefone" value="{{ cliente.telefone }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>CEP</label>
+            <input type="text" name="cep" value="{{ cliente.cep }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Endereço Completo</label>
+            <input type="text" name="endereco_completo" value="{{ cliente.endereco_completo }}" required>
+        </div>
+
+        <button type="submit" class="btn-salvar">Confirmar Alterações</button>
+        <a href="{{ url_for('lista_clientes') }}" class="btn-cancelar">Cancelar e Voltar</a>
+    </form>
+</div>
+
+</body>
+</html>

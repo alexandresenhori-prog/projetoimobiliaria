@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Imóvel | {{ imovel.cod_elemento }}</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 40px; }
+        .form-container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #1a237e; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .btn-salvar { background: #27ae60; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 10px; }
+        .btn-cancelar { display: block; text-align: center; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Editar Imóvel: {{ imovel.cod_elemento }}</h2>
+    <form action="{{ url_for('atualizar_imovel', id=imovel.id) }}" method="POST">
+        
+        <div class="form-group">
+            <label>Valor de Captação (R$)</label>
+            <input type="number" step="0.01" name="valor_imovel" value="{{ imovel.valor_captacao }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Endereço</label>
+            <input type="text" name="endereco" value="{{ imovel.endereco }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Complemento</label>
+            <input type="text" name="complemento" value="{{ imovel.complemento }}">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>Metragem (m²)</label>
+                <input type="number" name="metragem" value="{{ imovel.metragem }}">
+            </div>
+            <div class="form-group">
+                <label>Quartos</label>
+                <input type="number" name="quartos" value="{{ imovel.quartos }}">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>Suítes</label>
+                <input type="number" name="suites" value="{{ imovel.suites }}">
+            </div>
+            <div class="form-group">
+                <label>Vagas</label>
+                <input type="number" name="vagas" value="{{ imovel.vagas }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Observações Internas</label>
+            <textarea name="observacoes" rows="4">{{ imovel.observacoes }}</textarea>
+        </div>
+
+        <button type="submit" class="btn-salvar">💾 Salvar Alterações</button>
+        <a href="{{ url_for('estoque') }}" class="btn-cancelar">Cancelar e voltar</a>
+    </form>
+</div>
+
+</body>
+</html>

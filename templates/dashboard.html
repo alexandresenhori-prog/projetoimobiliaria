@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Imobiliária Xandi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --text: #333;
+            --disabled: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text);
+        } 
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .user-info { display: flex; align-items: center; gap: 15px; }
+
+        .btn-sair {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-msg { margin-bottom: 30px; }
+        .welcome-msg h1 { font-size: 2.2rem; margin-bottom: 5px; }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover:not(.card-bloqueado) {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .card-bloqueado {
+            cursor: not-allowed;
+            filter: grayscale(1);
+            opacity: 0.7;
+            background-color: #f8f9fa;
+            border: 1px dashed var(--disabled);
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        .badge-acesso {
+            font-size: 0.7rem;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: #777;
+        }
+
+        .card i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .card h3 { margin: 10px 0; font-size: 1.4rem; }
+        .card p { color: #666; font-size: 0.95rem; line-height: 1.4; }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h2 style="margin:0;"><i class="fas fa-home"></i> IMOBILIÁRIA XANDI</h2>
+        </div>
+        <div class="user-info">
+            <span>Olá, <strong>{{ nome }}</strong></span>
+            <a href="/logout" class="btn-sair">Sair</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="welcome-msg">
+            <h1>O que vamos fazer hoje?</h1>
+            <p>Selecione uma das opções abaixo para gerenciar o sistema.</p>
+        </div>
+
+        <div class="grid-cards">
+            <div class="card" onclick="window.location.href='/estoque'">
+                <i class="fas fa-building"></i>
+                <h3>Estoque de Imóveis</h3>
+                <p>Ver lista, buscar endereços e atualizar fotos dos imóveis.</p>
+            </div>
+
+            <div class="card" onclick="window.location.href='/captacao'">
+                <i class="fas fa-plus-circle"></i>
+                <h3>Nova Captação</h3>
+                <p>Cadastrar um novo imóvel no sistema vinculado a um proprietário.</p>
+            </div>
+
+            <div class="card" onclick="window.location.href='/lista_clientes'">
+                <i class="fas fa-users"></i>
+                <h3>Gestão de Clientes</h3>
+                <p>Cadastrar e gerenciar dados de compradores e proprietários.</p>
+            </div>
+
+            {% set lista_p = session.get('permissoes', []) %}
+            {% set adm = 'admin_usuarios' in lista_p %}
+
+            <div class="card {{ 'card-bloqueado' if not adm else '' }}" 
+                 onclick="{% if adm %} window.location.href='/painel_adm' {% else %} alert('Acesso restrito.') {% endif %}">
+                
+                {% if not adm %} <i class="fas fa-lock lock-icon"></i> {% endif %}
+                
+                <i class="fas fa-chart-line" style="color: {{ '#f39c12' if adm else '#bdc3c7' }}"></i>
+                <h3>Painel Administrativo</h3>
+                <p>Estatísticas, gráficos de desempenho e resumo semanal.</p>
+                
+                {% if not adm %} <span class="badge-acesso">Solicitar Acesso</span> {% endif %}
+            </div>
+
+            <div class="card {{ 'card-bloqueado' if not adm else '' }}" 
+                 onclick="{% if adm %} window.location.href='/configuracoes' {% else %} alert('Nível Master requerido.') {% endif %}">
+                
+                {% if not adm %} <i class="fas fa-lock lock-icon"></i> {% endif %}
+                
+                <i class="fas fa-user-shield" style="color: {{ '#2980b9' if adm else '#bdc3c7' }}"></i>
+                <h3>Configurações</h3>
+                <p>Gerenciar equipe, níveis de acesso e permissões especiais.</p>
+                
+                {% if not adm %} <span class="badge-acesso">Nível Master</span> {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Imobiliária Xandi - Sistema Interno de Gestão
+    </footer>
+
+</body>
+</html>

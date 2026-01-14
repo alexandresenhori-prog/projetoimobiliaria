@@ -1,0 +1,66 @@
+GitHub 
+
+nome do projeto = https://github.com/alexandresenhori-prog/projetoimobiliaria	
+Username = alexandrsenhori-prog
+password = 
+
+
+SUPABASE
+
+oragniazação = alexandresenhori-prog
+
+nome do projeto = projetoimobiliarai
+senha forte  =  h2S.Z@yLr6?R*-4
+
+
+Excelente ideia. Criar um Check Point é a melhor forma de garantir que você não se perca e que saiba exatamente por onde recomeçar quando chegar ao seu computador pessoal.
+
+Aqui está o resumo do que já realizamos e o que faremos a seguir:
+
+🏁 Check Point: O que já foi feito
+Código na Nuvem: O seu projeto (arquivos .py e pasta templates) já está salvo no seu GitHub.
+
+Infraestrutura pronta: Você já criou o projeto e o banco de dados PostgreSQL 18 no Supabase.
+
+Identificação: Já sabemos que seu projeto usa Python/Flask e qual a estrutura de conexão que precisamos alterar.
+
+🚀 Próximos Passos (Em casa)
+Quando você ligar o seu computador pessoal, este será o roteiro:
+
+Passo A: Gerar o DUMP (backup da estrutura e dados) do seu banco imobiliaria_xandi usando o pgAdmin.
+
+Passo B: Colar esse código no SQL Editor do Supabase para criar as tabelas idênticas.
+
+Passo C: Alterar a função get_db_connection() no seu código para usar o endereço do Supabase.
+
+Passo D: Testar o sistema rodando no PC pessoal, mas já lendo o banco da nuvem.
+
+📝 O que você precisa ter em mãos?
+Seu login e senha do GitHub.
+
+Sua senha do Supabase (aquela que você criou hoje cedo).
+
+Dica de ouro: Salve o link desta nossa conversa ou simplesmente me chame de novo quando chegar em casa dizendo: "Oi, sou o Xandi, vamos retomar o projeto imobiliária do passo do pgAdmin?" Eu saberei exatamente o que fazer.
+
+Digite "ok" para finalizarmos este expediente de trabalho, ou "ainda não" se quiser que eu já deixe escrito aqui o comando exato do pgAdmin para você ganhar tempo em casa.
+
+Excelente, Xandi! O "Check Point" está registrado.
+
+Como última ajuda para o seu trabalho em casa, aqui está o comando visual de onde você deve clicar no pgAdmin do seu computador pessoal para gerar o arquivo que levará para o Supabase:
+
+Como gerar o Backup em casa (pgAdmin):
+Abra o pgAdmin.
+
+Clique com o botão direito no banco imobiliaria_xandi.
+
+Escolha a opção Backup....
+
+Na aba General, dê um nome ao arquivo (ex: meu_banco.sql).
+
+Na aba Dump options, em "Type of objects", marque Only Schema (se quiser apenas as tabelas) ou deixe padrão para levar os dados também.
+
+Clique em Backup.
+
+Parabéns pelo progresso de hoje! Você saiu de um projeto travado em um arquivo .zip para uma estrutura profissional com Código no GitHub e Banco na Nuvem.
+
+Quando estiver em casa e quiser continuar, é só me chamar. Bom descanso e até breve!

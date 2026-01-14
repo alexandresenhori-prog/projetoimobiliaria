@@ -1,0 +1,19 @@
+@app.route('/dashboard')
+def dashboard():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        # Busca contagem de imóveis para o painel não ficar vazio
+        cur.execute("SELECT COUNT(*) as total FROM imoveis")
+        res = cur.fetchone()
+        total = res['total'] if res else 0
+        
+        return render_template('dashboard.html', 
+                               nome=session.get('nome_usuario'), 
+                               total_imoveis=total)
+    finally:
+        cur.close()
+        conn.close()</html>

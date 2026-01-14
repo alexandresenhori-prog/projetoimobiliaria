@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Clientes | Imobiliária Xandi</title>
+    <style>
+        :root { --primary: #1a237e; --accent: #3498db; --bg: #f1f2f6; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 30px; }
+        fieldset { border: 1px solid #ced4da; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        legend { font-weight: bold; color: var(--accent); padding: 0 10px; font-size: 13px; text-transform: uppercase; }
+        .row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .col { flex: 1; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn-salvar { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-salvar:hover { background: #0d144d; }
+        .input-chave { background: #fff9c4 !important; border: 2px solid #fbc02d !important; font-weight: bold; }
+        .loading-msg { font-size: 11px; color: #f39c12; display: none; margin-top: 5px; font-weight: bold; }
+        .readonly-field { background-color: #e9ecef !important; cursor: not-allowed; color: #495057; border: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>👤 Cadastro de Cliente / Proprietário</h2>
+        <a href="/dashboard" style="color: white; text-decoration: none; font-size: 14px;">⬅ Voltar ao Painel</a>
+    </div>
+
+    <div class="content">
+        <form action="/salvar_cliente" method="POST" id="formCliente">
+            <fieldset>
+                <legend>1. Chave de Acesso (Entrada Numérica Limpa)</legend>
+                <div class="row">
+                    <div class="col">
+                        <label>CPF / CNPJ (Apenas números)</label>
+                        <input type="text" name="documento" id="doc" class="input-chave" required 
+                               placeholder="Digite ou cole os números" autofocus maxlength="18">
+                        <span id="loading" class="loading-msg">⏳ Validando e consultando base legal...</span>
+                    </div>
+                    
+                    <div class="col">
+                        <label>Tipo Detectado</label>
+                        <select name="tipo_pessoa" id="tipo_pessoa" class="readonly-field" tabindex="-1">
+                            <option value="">Aguardando...</option>
+                            <option value="F">Pessoa Física</option>
+                            <option value="J">Pessoa Jurídica</option>
+                        </select>
+                    </div>
+
+                    <div class="col" style="flex: 2;">
+                        <label>Nome Completo / Razão Social</label>
+                        <input type="text" name="nome_razao" id="nome_razao" required placeholder="Preenchimento automático">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Localização e Contato</legend>
+                <div class="row">
+                    <div class="col">
+                        <label>E-mail</label>
+                        <input type="email" name="email" id="email" placeholder="email@exemplo.com">
+                    </div>
+                    <div class="col">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="text" name="telefone" id="telefone" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>CEP</label>
+                        <input type="text" name="cep" id="cep" placeholder="00000-000">
+                    </div>
+                    <div class="col" style="flex: 3;">
+                        <label>Endereço Completo</label>
+                        <input type="text" name="endereco_completo" id="endereco_completo" placeholder="Rua, Número, Bairro, Cidade - UF">
+                    </div>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn-salvar">GRAVAR CLIENTE NO BANCO</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const masks = {
+        cpf: v => v.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"),
+        cnpj: v => v.replace(/\D/g, "").replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5"),
+        cep: v => v.replace(/\D/g, "").replace(/(\d{5})(\d{3})/, "$1-$2"),
+        telefone: v => v.replace(/\D/g, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+    };
+
+    const docInput = document.getElementById('doc');
+    const tipoSelect = document.getElementById('tipo_pessoa');
+    const loading = document.getElementById('loading');
+    const campoNome = document.getElementById('nome_razao');
+    const campoEndereco = document.getElementById('endereco_completo');
+    const campoCep = document.getElementById('cep');
+
+    docInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, "");
+        e.target.value = value; 
+        if (value.length === 0) {
+            liberarCampos();
+            tipoSelect.value = "";
+        } else if (value.length <= 11) {
+            tipoSelect.value = "F";
+        } else {
+            tipoSelect.value = "J";
+        }
+    });
+
+    docInput.addEventListener('focus', function() {
+        this.value = this.value.replace(/\D/g, "");
+    });
+
+    docInput.addEventListener('blur', async function() {
+        const docLimpo = this.value.replace(/\D/g, "");
+        if (docLimpo.length !== 11 && docLimpo.length !== 14) return;
+        loading.style.display = 'block';
+        try {
+            const response = await fetch('/verificar_documento', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ documento: docLimpo })
+            });
+            const data = await response.json();
+            if (data.status === 'duplicado') {
+                alert(data.mensagem);
+                this.value = '';
+                liberarCampos();
+                return;
+            }
+            if (docLimpo.length === 14) {
+                const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${docLimpo}`);
+                if (res.ok) {
+                    const cnpjData = await res.json();
+                    campoNome.value = cnpjData.razao_social;
+                    campoCep.value = masks.cep(cnpjData.cep);
+                    campoEndereco.value = `${cnpjData.logradouro}, ${cnpjData.numero} - ${cnpjData.bairro}, ${cnpjData.municipio}/${cnpjData.uf}`;
+                    document.getElementById('telefone').value = masks.telefone(cnpjData.ddd_telefone_1 || "");
+                    blindarCampos();
+                }
+                this.value = masks.cnpj(docLimpo);
+            } else {
+                this.value = masks.cpf(docLimpo);
+                liberarCampos();
+            }
+        } catch (err) {
+            console.error("Erro na consulta:", err);
+        } finally {
+            loading.style.display = 'none';
+        }
+    });
+
+    function liberarCampos() {
+        [campoNome, campoEndereco, campoCep].forEach(c => {
+            c.readOnly = false;
+            c.classList.remove('readonly-field');
+            c.value = '';
+        });
+    }
+
+    function blindarCampos() {
+        [campoNome, campoEndereco, campoCep].forEach(c => {
+            c.readOnly = true;
+            c.classList.add('readonly-field');
+        });
+    }
+
+    document.getElementById('cep').addEventListener('blur', e => e.target.value = masks.cep(e.target.value));
+    document.getElementById('telefone').addEventListener('blur', e => e.target.value = masks.telefone(e.target.value));
+</script>
+</body>
+</html>

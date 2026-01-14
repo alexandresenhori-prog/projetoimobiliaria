@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Clientes - Imobiliária</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-dark mb-0">Gestão de Clientes</h1>
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Voltar</a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoCliente">
+                <i class="bi bi-person-plus"></i> Novo Cliente
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form action="{{ url_for('lista_clientes') }}" method="GET" class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nome ou CPF/CNPJ..." value="{{ busca or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome / Razão Social</th>
+                        <th>Documento</th>
+                        <th>Contato</th>
+                        <th>Endereço</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-primary">{{ cliente.nome_razao }}</div>
+                            <small class="text-muted">{{ cliente.tipo_pessoa }}</small>
+                        </td>
+                        <td>{{ cliente.documento }}</td>
+                        <td>
+                            <i class="bi bi-whatsapp"></i> {{ cliente.telefone }}<br>
+                            <small class="text-muted">{{ cliente.email }}</small>
+                        </td>
+                        <td>
+                            <small>{{ cliente.endereco_completo }}</small>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Nenhum cliente encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoCliente" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form action="{{ url_for('salvar_cliente') }}" method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cadastrar Novo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo_pessoa" class="form-select">
+                            <option value="PF">Pessoa Física</option>
+                            <option value="PJ">Pessoa Jurídica</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">CPF ou CNPJ (apenas números)</label>
+                        <input type="text" name="documento" id="doc_cliente" class="form-control" required onblur="validarDoc()">
+                        <div id="status_doc" class="small"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Nome Completo / Razão Social</label>
+                        <input type="text" name="nome_razao" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Telefone/WhatsApp</label>
+                        <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">CEP</label>
+                        <input type="text" name="cep" id="cep_cliente" class="form-control" onblur="buscarCEPCliente()">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Endereço Completo</label>
+                        <input type="text" name="endereco_completo" id="end_cliente" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar Cliente</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function validarDoc() {
+        let doc = document.getElementById('doc_cliente').value;
+        let status = document.getElementById('status_doc');
+        let btn = document.getElementById('btnSalvar');
+
+        if(doc.length < 11) return;
+
+        fetch('/verificar_documento', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({documento: doc})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'erro' || data.status === 'duplicado') {
+                status.className = "small text-danger";
+                status.innerText = data.mensagem;
+                btn.disabled = true;
+            } else {
+                status.className = "small text-success";
+                status.innerText = data.mensagem;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    function buscarCEPCliente() {
+        let cep = document.getElementById('cep_cliente').value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('end_cliente').value = `${data.logradouro}, ${data.bairro} - ${data.localidade}/${data.uf}`;
+                    }
+                });
+        }
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

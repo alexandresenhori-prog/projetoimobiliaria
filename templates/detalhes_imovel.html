@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Imobiliária - {{ imovel.cod_elemento }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .carousel-item img { height: 400px; object-fit: cover; border-radius: 8px; }
+        .status-badge { font-size: 1.1rem; padding: 8px 15px; }
+        .history-line { border-left: 2px solid #0d6efd; padding-left: 15px; margin-bottom: 15px; }
+        .card-proprietario { border-left: 5px solid #212529; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Imóvel: <span class="text-primary">{{ imovel.cod_elemento }}</span></h2>
+        <a href="{{ url_for('estoque') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar ao Estoque
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div id="carouselImovel" class="carousel slide mb-4 shadow" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% if fotos %}
+                        {% for foto in fotos %}
+                        <div class="carousel-item {{ 'active' if loop.first }}">
+                            <img src="{{ url_for('static', filename='uploads/' + foto.url) }}" class="d-block w-100" alt="Foto">
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item active">
+                            <div class="bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 400px;">
+                                <p><i class="bi bi-camera-video-off fs-1"></i><br>Nenhuma foto cadastrada.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% if fotos|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselImovel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselImovel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="card mb-4 border-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-success"><i class="bi bi-cloud-arrow-up"></i> Atualizar Galeria (Múltiplas Fotos)</h6>
+                    <form action="/upload_fotos/{{ imovel.id }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2">
+                        <input type="file" name="fotos" multiple class="form-control" accept="image/*" required>
+                        <button type="submit" class="btn btn-success">Enviar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white"><h5><i class="bi bi-info-circle"></i> Dados do Imóvel</h5></div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-3 border-end"><strong>Área</strong><br>{{ imovel.metragem }}m²</div>
+                        <div class="col-3 border-end"><strong>Quartos</strong><br>{{ imovel.quartos }}</div>
+                        <div class="col-3 border-end"><strong>Suítes</strong><br>{{ imovel.suites }}</div>
+                        <div class="col-3"><strong>Vagas</strong><br>{{ imovel.vagas }}</div>
+                    </div>
+                    <p><strong>Tipo:</strong> {{ imovel.tipo }}</p>
+                    <p><strong>Endereço:</strong> {{ imovel.endereco }}, {{ imovel.complemento }} - CEP: {{ imovel.cep }}</p>
+                    <p><strong>Observações:</strong> {{ imovel.observacoes or 'Nenhuma observação informada.' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4 border-primary shadow">
+                <div class="card-body text-center">
+                    <h3 class="text-primary mb-3">R$ {{ "{:,.2f}".format(imovel.valor_captacao).replace(',', 'X').replace('.', ',').replace('X', '.') }}</h3>
+                    <span class="badge bg-info status-badge mb-3">{{ imovel.status_nome }}</span>
+                    <hr>
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalStatus">
+                        <i class="bi bi-pencil-square"></i> Atualizar Status / Histórico
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4 shadow-sm card-proprietario">
+                <div class="card-header bg-dark text-white">Proprietário</div>
+                <div class="card-body">
+                    <h6 class="fw-bold">{{ imovel.nome_proprietario }}</h6>
+                    <p class="mb-1"><i class="bi bi-whatsapp text-success"></i> {{ imovel.tel_proprietario }}</p>
+                    <p><i class="bi bi-envelope"></i> {{ imovel.email_proprietario }}</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white fw-bold">Histórico de Alterações</div>
+                <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                    {% if historico %}
+                        {% for h in historico %}
+                        <div class="history-line">
+                            <small class="text-muted">{{ h.data_alteracao.strftime('%d/%m/%Y %H:%M') }}</small><br>
+                            <span class="badge bg-secondary mb-1">{{ h.status_nome }}</span><br>
+                            <small class="d-block">{{ h.observacao }}</small>
+                            <small class="text-primary">Por: {{ h.usuario_nome }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">Sem histórico registrado.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalStatus" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="/mudar_status" method="POST" class="modal-content">
+            <div class="modal-header"><h5>Atualizar Status do Imóvel</h5></div>
+            <div class="modal-body">
+                <input type="hidden" name="imovel_id" value="{{ imovel.id }}">
+                <div class="mb-3">
+                    <label class="form-label">Novo Status</label>
+                    <select name="status_id" class="form-select">
+                        {% for st in lista_status %}
+                        <option value="{{ st.id }}" {{ 'selected' if st.id == imovel.status_id }}>{{ st.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observação / Motivo</label>
+                    <textarea name="observacao" class="form-control" rows="3" required placeholder="Descreva o motivo da mudança..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Alteração</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Ficha do Imóvel - {{ imovel.cod_elemento }}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 0; margin: 0; background: #fff; }
+        .ficha { width: 210mm; min-height: 297mm; padding: 20mm; margin: auto; box-sizing: border-box; }
+        
+        /* Cabeçalho de Impressão */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1a237e; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #1a237e; font-size: 24pt; }
+        .header span { font-weight: bold; color: #666; }
+
+        /* Foto de Destaque */
+        .foto-principal { width: 100%; height: 350px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
+
+        /* Dados Principais */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .item-info { border-bottom: 1px solid #ddd; padding: 10px 0; }
+        .item-info label { display: block; font-size: 10pt; color: #888; text-transform: uppercase; }
+        .item-info span { font-size: 14pt; font-weight: bold; color: #333; }
+
+        /* Descrição */
+        .descricao { padding: 20px; background: #f9f9f9; border-left: 5px solid #1a237e; margin-bottom: 30px; }
+        .descricao h3 { margin-top: 0; color: #1a237e; }
+
+        /* Rodapé com espaço para carimbo/assinatura */
+        .footer { margin-top: 50px; border-top: 1px dashed #ccc; padding-top: 20px; display: flex; justify-content: space-between; font-size: 10pt; }
+
+        /* BOTÃO DE IMPRIMIR (SÓ APARECE NA TELA) */
+        .no-print { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: #27ae60; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; background: none; }
+            .ficha { width: 100%; padding: 0; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="no-print" onclick="window.print()">🖨️ IMPRIMIR FICHA</button>
+
+    <div class="ficha">
+        <div class="header">
+            <div>
+                <h1>Xandi Imobiliária</h1>
+                <span>{{ imovel.tipo }} - {{ imovel.endereco }}</span>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 18pt;">COD: {{ imovel.cod_elemento }}</span>
+            </div>
+        </div>
+
+        {% if foto %}
+            <img src="{{ url_for('static', filename='uploads/' + foto.url) }}" class="foto-principal">
+        {% else %}
+            <div style="width: 100%; height: 200px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center;">Foto não disponível</div>
+        {% endif %}
+
+        <div class="info-grid">
+            <div class="item-info">
+                <label>Metragem</label>
+                <span>{{ imovel.metragem }} m²</span>
+            </div>
+            <div class="item-info">
+                <label>Quartos</label>
+                <span>{{ imovel.quartos }}</span>
+            </div>
+            <div class="item-info">
+                <label>Suítes</label>
+                <span>{{ imovel.suites }}</span>
+            </div>
+            <div class="item-info">
+                <label>Vagas de Garagem</label>
+                <span>{{ imovel.vagas }}</span>
+            </div>
+        </div>
+
+        <div class="descricao">
+            <h3>Descrição e Detalhes</h3>
+            <p>{{ imovel.observacoes or 'Imóvel em excelentes condições, localizado em região privilegiada. Entre em contato para mais detalhes.' }}</p>
+        </div>
+
+        <div class="footer">
+            <div>Gerado em: <span id="data-atual"></span></div>
+            <div>Corretor Responsável: ____________________________</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('data-atual').innerText = new Date().toLocaleDateString('pt-br');
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Nova Captação - Imobiliária</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white p-3">
+                    <h4 class="mb-0"><i class="bi bi-house-add"></i> Nova Captação de Imóvel</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('salvar_imovel') }}" method="POST">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3">1. Dados do Proprietário</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">CPF/CNPJ do Proprietário</label>
+                                <div class="input-group">
+                                    <input type="text" name="documento_proprietario" id="doc_prop" class="form-control" placeholder="Apenas números" required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="verificarProprietario()">Verificar</button>
+                                </div>
+                                <div id="msg_prop" class="small mt-1"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nome do Proprietário</label>
+                                <input type="text" id="nome_prop" class="form-control" readonly placeholder="Verifique o documento primeiro">
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">2. Localização</h5>
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">CEP</label>
+                                <input type="text" name="cep" id="cep" class="form-control" placeholder="00000-000" required onblur="buscarCEP()">
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold">Endereço Completo</label>
+                                <input type="text" name="endereco" id="endereco" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Complemento</label>
+                                <input type="text" name="complemento" class="form-control" placeholder="Apto/Bloco">
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">3. Características e Valor</h5>
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Tipo de Imóvel</label>
+                                <select name="tipo" class="form-select" required>
+                                    <option value="CASA">Casa</option>
+                                    <option value="APTO">Apartamento</option>
+                                    <option value="TERRENO">Terreno</option>
+                                    <option value="SALA">Sala Comercial</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Valor de Captação (R$)</label>
+                                <input type="number" step="0.01" name="valor_imovel" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Área (m²)</label>
+                                <input type="number" name="metragem" class="form-control">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end justify-content-between">
+                                <div class="text-center mx-1">
+                                    <label class="small fw-bold">Quartos</label>
+                                    <input type="number" name="quartos" class="form-control form-control-sm" value="0">
+                                </div>
+                                <div class="text-center mx-1">
+                                    <label class="small fw-bold">Suítes</label>
+                                    <input type="number" name="suites" class="form-control form-control-sm" value="0">
+                                </div>
+                                <div class="text-center mx-1">
+                                    <label class="small fw-bold">Vagas</label>
+                                    <input type="number" name="vagas" class="form-control form-control-sm" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Observações Internas</label>
+                            <textarea name="observacoes" class="form-control" rows="3" placeholder="Detalhes sobre chaves, horários de visita, etc."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-light border px-5">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-5">Salvar Captação</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para buscar endereço pelo CEP automaticamente
+    function buscarCEP() {
+        let cep = document.getElementById('cep').value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('endereco').value = `${data.logradouro}, ${data.bairro} - ${data.localidade}/${data.uf}`;
+                    }
+                });
+        }
+    }
+
+    // Função para verificar se o proprietário já existe no banco
+    function verificarProprietario() {
+        let doc = document.getElementById('doc_prop').value;
+        let msg = document.getElementById('msg_prop');
+        let nomeInput = document.getElementById('nome_prop');
+
+        if (!doc) return;
+
+        fetch('/verificar_documento', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({documento: doc})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'duplicado') {
+                msg.innerHTML = `<span class="text-success fw-bold">${data.mensagem}</span>`;
+                // Extrai o nome da mensagem "⛔ Já cadastrado: NOME"
+                nomeInput.value = data.mensagem.split(': ')[1].replace('.', '');
+            } else {
+                msg.innerHTML = `<span class="text-danger">Proprietário não encontrado. <a href="/clientes">Cadastre-o primeiro.</a></span>`;
+                nomeInput.value = "";
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
