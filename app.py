@@ -19,7 +19,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- CONEXÃO COM O BANCO (SUPABASE) ---
+# --- CONEXÃO COM O BANCO (SUPABASE) --- ***
 def get_db_connection():
     return psycopg2.connect(
         host=os.getenv('DB_HOST'),
