@@ -33,16 +33,6 @@
 
         .user-info { display: flex; align-items: center; gap: 15px; }
 
-        .btn-sair {
-            background-color: #e74c3c;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
         .container {
             max-width: 1200px;
             margin: 40px auto;
@@ -72,6 +62,8 @@
             align-items: center;
             position: relative;
             overflow: hidden;
+            text-decoration: none; /* Garante que links não fiquem azuis */
+            color: inherit;
         }
 
         .card:hover:not(.card-bloqueado) {
@@ -130,7 +122,7 @@
         </div>
         <div class="user-info">
             <span>Olá, <strong>{{ nome }}</strong></span>
-            <a href="/logout" class="btn-sair">Sair</a>
+            <a href="{{ url_for('logout') }}" style="color: #ffcc00; text-decoration: underline; font-weight: bold; margin-left: 15px;">Sair</a>
         </div>
     </header>
 
@@ -141,50 +133,58 @@
         </div>
 
         <div class="grid-cards">
-            <div class="card" onclick="window.location.href='/estoque'">
+            <a href="/estoque" class="card">
                 <i class="fas fa-building"></i>
                 <h3>Estoque de Imóveis</h3>
                 <p>Ver lista, buscar endereços e atualizar fotos dos imóveis.</p>
-            </div>
+            </a>
 
-            <div class="card" onclick="window.location.href='/captacao'">
+            <a href="/captacao" class="card">
                 <i class="fas fa-plus-circle"></i>
                 <h3>Nova Captação</h3>
                 <p>Cadastrar um novo imóvel no sistema vinculado a um proprietário.</p>
-            </div>
+            </a>
 
-            <div class="card" onclick="window.location.href='/lista_clientes'">
+            <a href="/lista_clientes" class="card">
                 <i class="fas fa-users"></i>
                 <h3>Gestão de Clientes</h3>
                 <p>Cadastrar e gerenciar dados de compradores e proprietários.</p>
-            </div>
+            </a>
 
             {% set lista_p = session.get('permissoes', []) %}
             {% set adm = 'admin_usuarios' in lista_p %}
 
-            <div class="card {{ 'card-bloqueado' if not adm else '' }}" 
-                 onclick="{% if adm %} window.location.href='/painel_adm' {% else %} alert('Acesso restrito.') {% endif %}">
-                
-                {% if not adm %} <i class="fas fa-lock lock-icon"></i> {% endif %}
-                
-                <i class="fas fa-chart-line" style="color: {{ '#f39c12' if adm else '#bdc3c7' }}"></i>
-                <h3>Painel Administrativo</h3>
-                <p>Estatísticas, gráficos de desempenho e resumo semanal.</p>
-                
-                {% if not adm %} <span class="badge-acesso">Solicitar Acesso</span> {% endif %}
-            </div>
+            {% if adm %}
+                <a href="/painel_adm" class="card">
+                    <i class="fas fa-chart-line" style="color: #f39c12"></i>
+                    <h3>Painel Administrativo</h3>
+                    <p>Estatísticas, gráficos de desempenho e resumo semanal.</p>
+                </a>
+            {% else %}
+                <div class="card card-bloqueado" onclick="alert('Acesso restrito.')">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Painel Administrativo</h3>
+                    <p>Estatísticas, gráficos de desempenho e resumo semanal.</p>
+                    <span class="badge-acesso">Solicitar Acesso</span>
+                </div>
+            {% endif %}
 
-            <div class="card {{ 'card-bloqueado' if not adm else '' }}" 
-                 onclick="{% if adm %} window.location.href='/configuracoes' {% else %} alert('Nível Master requerido.') {% endif %}">
-                
-                {% if not adm %} <i class="fas fa-lock lock-icon"></i> {% endif %}
-                
-                <i class="fas fa-user-shield" style="color: {{ '#2980b9' if adm else '#bdc3c7' }}"></i>
-                <h3>Configurações</h3>
-                <p>Gerenciar equipe, níveis de acesso e permissões especiais.</p>
-                
-                {% if not adm %} <span class="badge-acesso">Nível Master</span> {% endif %}
-            </div>
+            {% if adm %}
+                <a href="/configuracoes" class="card">
+                    <i class="fas fa-user-shield" style="color: #2980b9"></i>
+                    <h3>Configurações</h3>
+                    <p>Gerenciar equipe, níveis de acesso e permissões especiais.</p>
+                </a>
+            {% else %}
+                <div class="card card-bloqueado" onclick="alert('Nível Master requerido.')">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <i class="fas fa-user-shield"></i>
+                    <h3>Configurações</h3>
+                    <p>Gerenciar equipe, níveis de acesso e permissões especiais.</p>
+                    <span class="badge-acesso">Nível Master</span>
+                </div>
+            {% endif %}
         </div>
     </div>
 

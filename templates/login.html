@@ -53,8 +53,34 @@
         
         <input type="password" name="senha" placeholder="Senha (280814As@)" required>
         
-        <button type="submit">ENTRAR NO SISTEMA</button>
-    </form>
+        <button type="submit" class="btn btn-primary w-100">ENTRAR NO SISTEMA</button>
+        <div class="mt-4 text-center" style="border-top: 1px solid #eee; padding-top: 15px;">
+        
+        <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; text-align: center;">
+    <a href="{{ url_for('logout') }}" onclick="fecharAplicativo(event)" style="color: #d9534f; text-decoration: underline; font-weight: bold; font-size: 0.9em;">
+        SAIR E FECHAR
+    </a>
+
+<script>
+function fecharAplicativo(event) {
+    // Primeiro, ele deixa o link ir para a rota /logout para limpar a sessão
+    // Depois de 500ms, ele tenta fechar a janela
+    setTimeout(function() {
+        window.close(); // Tenta fechar a aba
+        // Caso o navegador bloqueie o window.close(), redirecionamos para uma página vazia
+        window.location.href = "about:blank";
+    }, 500);
+}
+</script>
+
+</div>
+    
+</div>
+        
+    </form> 
+        
+        </div>
+    
 </div>
 
 </body>

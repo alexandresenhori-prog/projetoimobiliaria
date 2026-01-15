@@ -1,0 +1,26 @@
+ntendido! Foi uma jornada produtiva hoje. Conseguimos finalmente "limpar" o código, estruturar o banco de dados e deixar a base pronta para a política de acessos seletivos.
+
+Aqui está o seu Checkpoint de Retomada para amanhã:
+
+1. Status Atual do Projeto
+Banco de Dados: Tabelas perfis, permissoes e perfil_permissoes criadas e relacionadas no Supabase.
+
+Código Principal (app.py): Arquivo restaurado, sem erros de sintaxe e com as rotas de login e listagem de perfis configuradas.
+
+Interface: Arquivo templates/perfis.html criado com o estilo sóbrio solicitado.
+
+2. Onde Paramos (Para amanhã)
+Precisamos apenas dar "vida" ao botão de salvar da nova tela. Atualmente, o formulário envia os dados para /salvar_perfil, mas essa rota ainda não existe no seu app.py.
+
+O que faremos primeiro amanhã:
+
+Criar a rota @app.route('/salvar_perfil', methods=['POST']): Esta função vai pegar o nome do perfil e os IDs das permissões marcadas (checkboxes) e gravar nas tabelas do banco.
+
+Testar o Bloqueio: Criar um perfil limitado e verificar se o sistema realmente desabilita os botões no Dashboard conforme discutimos no início.
+
+3. Lembrete de Segurança
+Certifique-se de salvar todas as abas no VS Code antes de fechar o computador. O seu app.py está perfeito agora (0 erros no painel de problemas), então amanhã começaremos com o pé direito.
+
+Deseja que eu já deixe o código da rota de salvamento preparado aqui para você apenas copiar amanhã cedo ou prefere revisar a tela primeiro?
+
+Bom descanso e até amanhã!

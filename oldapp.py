@@ -12,16 +12,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    # Se o usuário já estiver logado (sessão ativa), manda direto para o dashboard
-    if 'usuario_id' in session:
-        return redirect(url_for('dashboard'))
-    
-    # Se não estiver logado, manda para a tela de login
-    return redirect(url_for('login'))
-
-
 # Configurações de Sessão (15 minutos)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
@@ -66,10 +56,13 @@ def validar_documento(doc):
             if digit != int(doc[i]): return False
         return True
     return False
- 
 
 # --- ROTAS DE ACESSO ---
-
+@app.route('/')
+def index():
+    if 'usuario_id' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -81,59 +74,38 @@ def login():
         try:
             conn = get_db_connection()
             cur = conn.cursor(cursor_factory=RealDictCursor)
-            
-            # 1. Busca credenciais
-            cur.execute("SELECT u.id, c.nome, u.nivel_acesso FROM usuarios u JOIN colaboradores c ON u.colaborador_id = c.id WHERE u.login = %s AND u.senha = %s", (login_input, senha_input))
+            cur.execute("""
+                SELECT u.id, c.nome, u.nivel_acesso, u.perfil_id
+                FROM usuarios u
+                JOIN colaboradores c ON u.colaborador_id = c.id
+                WHERE u.login = %s AND u.senha = %s
+            """, (login_input, senha_input))
             user = cur.fetchone()
-            
             if user:
-                # 2. Busca permissões ativas no tempo real
-                cur.execute("""
-                    SELECT DISTINCT p.chave FROM permissoes p
-                    JOIN perfil_permissoes pp ON p.id = pp.permissao_id
-                    JOIN usuario_perfis up ON pp.perfil_id = up.perfil_id
-                    WHERE up.usuario_id = %s AND up.status = 'ativo'
-                      AND CURRENT_TIMESTAMP BETWEEN up.data_inicio AND COALESCE(up.data_fim, '9999-12-31 23:59:59')
-                """, (user['id'],))
-                
-                rows = cur.fetchall()
-                permissoes = [row['chave'] for row in rows]
-
-                # 3. CHAVE MESTRA: Se for ADMIN, garante acesso total independente do banco
-                if user['nivel_acesso'] == 'ADMIN':
-                    permissoes = ['admin_usuarios', 'configuracoes', 'painel_adm', 'imoveis_consultar', 'imoveis_cadastrar']
-
-                # 4. Grava a Sessão
                 session.permanent = True
                 session['usuario_id'] = user['id']
                 session['nome_usuario'] = user['nome']
                 session['user_nivel'] = user['nivel_acesso']
-                session['permissoes'] = permissoes
-                
+                try:
+                    cur.execute("""
+                        SELECT p.chave FROM permissoes p
+                        JOIN perfil_permissoes pp ON p.id = pp.permissao_id
+                        WHERE pp.perfil_id = %s
+                    """, (user['perfil_id'],))
+                    permissoes = [row['chave'] for row in cur.fetchall()]
+                    if user['nivel_acesso'] == 'ADMIN' and not permissoes:
+                        permissoes = ['admin_usuarios']
+                    session['permissoes'] = permissoes
+                except:
+                    session['permissoes'] = ['admin_usuarios']
                 return redirect(url_for('dashboard'))
             return render_template('login.html', erro="Usuário ou senha incorretos!")
+        except Exception as e:
+            return f"Erro técnico no banco de dados: {e}"
         finally:
             if cur: cur.close()
             if conn: conn.close()
     return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear() # Limpa as permissões e o acesso do administrador
-    return """
-    <script>
-        window.close();
-        // Se não fechar em 1 segundo, vai para uma página vazia
-        setTimeout(function(){ 
-            window.location.href = 'about:blank'; 
-        }, 1000);
-    </script>
-    <div style="text-align:center; padding-top:50px; font-family:sans-serif;">
-        <h2>Sessão Encerrada</h2>
-        <p>O aplicativo está sendo fechado...</p>
-        <p><a href="/">Clique aqui para voltar ao login</a></p>
-    </div>
-    """
 
 @app.route('/dashboard')
 def dashboard():
@@ -141,7 +113,10 @@ def dashboard():
     return render_template('dashboard.html', nome=session['nome_usuario'],
                            user_nome=session['nome_usuario'], user_nivel=session['user_nivel'])
 
-
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 # --- PAINEL ADMINISTRATIVO ---
 @app.route('/painel_adm')
@@ -471,37 +446,6 @@ def salvar_perfil():
     except Exception as e:
         conn.rollback()
         return f"Erro ao salvar perfil: {e}"
-    finally:
-        cur.close()
-        conn.close()
-
-@app.route('/admin/salvar-vinculo', methods=['POST'])
-def salvar_vinculo():
-    if 'usuario_id' not in session or session.get('user_nivel') != 'ADMIN':
-        return redirect(url_for('login'))
-    
-    usuario_id = request.form.get('usuario_id')
-    perfil_id = request.form.get('perfil_id')
-    data_fim = request.form.get('data_fim') # Vem do input type="date"
-    
-    # Se a data estiver vazia, salvamos como None (permanente)
-    if not data_fim:
-        data_fim = None
-    
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # Inserimos o vínculo com status ativo por padrão
-        cur.execute("""
-            INSERT INTO usuario_perfis (usuario_id, perfil_id, data_fim, status)
-            VALUES (%s, %s, %s, 'ativo')
-        """, (usuario_id, perfil_id, data_fim))
-        
-        conn.commit()
-        return redirect(url_for('menu_especial_acessos'))
-    except Exception as e:
-        conn.rollback()
-        return f"Erro ao vincular perfil: {e}"
     finally:
         cur.close()
         conn.close()
